@@ -1,0 +1,154 @@
+// Wrapper Fetch API pour communiquer avec le backend
+// Centralise les appels API, la gestion des tokens et des erreurs
+// Utilise exclusivement Fetch API (pas Axios)
+
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+
+interface FetchOptions extends RequestInit {
+  requireAuth?: boolean;
+}
+
+// Gère le rafraîchissement automatique du token
+async function refreshToken(): Promise<string | null> {
+  const refresh = localStorage.getItem("refreshToken");
+  if (!refresh) return null;
+
+  try {
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: refresh }),
+    });
+
+    if (!res.ok) {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      return null;
+    }
+
+    const data = await res.json();
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
+    return data.accessToken;
+  } catch {
+    return null;
+  }
+}
+
+// Fonction fetch principale avec gestion d'erreur et auth
+export async function api<T = any>(
+  endpoint: string,
+  options: FetchOptions = {}
+): Promise<{ success: boolean; data?: T; message?: string }> {
+  const { requireAuth = true, ...fetchOpts } = options;
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(fetchOpts.headers as Record<string, string>),
+  };
+
+  if (requireAuth) {
+    let token = localStorage.getItem("accessToken");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+  }
+
+  try {
+    let res = await fetch(`${API_BASE}${endpoint}`, {
+      ...fetchOpts,
+      headers,
+    });
+
+    // Si 401, essayer de rafraîchir le token
+    if (res.status === 401 && requireAuth) {
+      const newToken = await refreshToken();
+      if (newToken) {
+        headers["Authorization"] = `Bearer ${newToken}`;
+        res = await fetch(`${API_BASE}${endpoint}`, {
+          ...fetchOpts,
+          headers,
+        });
+      } else {
+        // Rediriger vers login
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+        return { success: false, message: "انتهت صلاحية الجلسة" };
+      }
+    }
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data.message || "حدث خطأ في الاتصال",
+      };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    return {
+      success: false,
+      message: "تعذر الاتصال بالخادم",
+    };
+  }
+}
+
+// Méthodes raccourcies pour les appels courants
+export const apiService = {
+  get: <T = any>(endpoint: string, options?: FetchOptions) =>
+    api<T>(endpoint, { ...options, method: "GET" }),
+
+  post: <T = any>(endpoint: string, body?: any, options?: FetchOptions) =>
+    api<T>(endpoint, {
+      ...options,
+      method: "POST",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  put: <T = any>(endpoint: string, body?: any, options?: FetchOptions) =>
+    api<T>(endpoint, {
+      ...options,
+      method: "PUT",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  patch: <T = any>(endpoint: string, body?: any, options?: FetchOptions) =>
+    api<T>(endpoint, {
+      ...options,
+      method: "PATCH",
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  delete: <T = any>(endpoint: string, options?: FetchOptions) =>
+    api<T>(endpoint, { ...options, method: "DELETE" }),
+
+  // Upload de fichier (FormData)
+  // N'envoie PAS Content-Type (le navigateur le définit automatiquement avec la boundary)
+  upload: async <T = any>(endpoint: string, formData: FormData) => {
+    const token = localStorage.getItem("accessToken");
+
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    try {
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return { success: false, message: data.message || "حدث خطأ في الرفع" };
+      }
+
+      return { success: true, data: data as T };
+    } catch {
+      return { success: false, message: "تعذر الاتصال بالخادم" };
+    }
+  },
+};
