@@ -48,7 +48,7 @@ export const clientsController = {
   // GET /api/clients/:id
   async findById(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const client = await clientsService.findById(req.params.id);
+      const client = await clientsService.findById(req.params.id as string);
       res.json({ success: true, client });
     } catch (error) {
       next(error);
@@ -72,7 +72,7 @@ export const clientsController = {
   async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const client = await clientsService.update(
-        req.params.id,
+        req.params.id as string,
         req.body,
         req.user!.userId
       );
@@ -85,7 +85,7 @@ export const clientsController = {
   // DELETE /api/clients/:id
   async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await clientsService.delete(req.params.id, req.user!.userId);
+      await clientsService.delete(req.params.id as string, req.user!.userId);
       res.json({ success: true, message: "تم حذف العميل بنجاح" });
     } catch (error) {
       next(error);

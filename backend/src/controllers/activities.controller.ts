@@ -19,7 +19,7 @@ export const activitiesController = {
   // GET /api/cases/:casId/activities
   async findByCaseId(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const activities = await activityRepository.findByCaseId(req.params.casId);
+      const activities = await activityRepository.findByCaseId(req.params.casId as string);
       res.json({ success: true, activities });
     } catch (error) {
       next(error);

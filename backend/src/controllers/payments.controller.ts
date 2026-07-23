@@ -10,7 +10,7 @@ export const paymentsController = {
   async findByCaseId(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const payments = await prisma.payment.findMany({
-        where: { casId: req.params.casId },
+        where: { casId: req.params.casId as string },
         orderBy: { date: "desc" },
       });
       res.json({ success: true, payments });
@@ -24,7 +24,7 @@ export const paymentsController = {
     try {
       const payment = await prisma.payment.create({
         data: {
-          casId: req.params.casId,
+          casId: req.params.casId as string,
           montant: parseFloat(req.body.montant),
           date: new Date(req.body.date),
           mode: req.body.mode,
@@ -39,7 +39,7 @@ export const paymentsController = {
         entity: "payment",
         entityId: payment.id,
         description: `إضافة دفعة : ${payment.montant} درهم`,
-        casId: req.params.casId,
+        casId: req.params.casId as string,
       });
 
       res.status(201).json({ success: true, payment });
@@ -51,7 +51,7 @@ export const paymentsController = {
   // DELETE /api/payments/:id
   async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await prisma.payment.delete({ where: { id: req.params.id } });
+      await prisma.payment.delete({ where: { id: req.params.id as string } });
       res.json({ success: true, message: "تم حذف الدفعة بنجاح" });
     } catch (error) {
       next(error);

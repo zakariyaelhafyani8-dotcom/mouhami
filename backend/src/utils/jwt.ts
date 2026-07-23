@@ -19,14 +19,14 @@ interface TokenPayload {
 export function generateAccessToken(payload: TokenPayload): string {
   return jwt.sign(payload, JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || "15m",
-  });
+  } as jwt.SignOptions);
 }
 
 // Génère un refresh token (7 jours)
 export function generateRefreshToken(payload: TokenPayload): string {
   return jwt.sign(payload, JWT_REFRESH_SECRET, {
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
-  });
+  } as jwt.SignOptions);
 }
 
 // Vérifie un access token

@@ -6,13 +6,12 @@ import { AuthRequest } from "../middlewares/auth.middleware";
 import { documentsService } from "../services/documents.service";
 import path from "path";
 import fs from "fs";
-import multer from "multer";
 
 export const documentsController = {
   // GET /api/cases/:casId/documents
   async findByCaseId(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const documents = await documentsService.findByCaseId(req.params.casId);
+      const documents = await documentsService.findByCaseId(req.params.casId as string);
       res.json({ success: true, documents });
     } catch (error) {
       next(error);
@@ -22,7 +21,7 @@ export const documentsController = {
   // POST /api/cases/:casId/documents
   async upload(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const file = (req as any).file as multer.File;
+      const file = (req as any).file as Express.Multer.File;
       if (!file) {
         return res.status(400).json({
           success: false,
@@ -31,7 +30,7 @@ export const documentsController = {
       }
 
       const doc = await documentsService.upload({
-        casId: req.params.casId,
+        casId: req.params.casId as string,
         typeId: req.body.typeId,
         checklistItemId: req.body.checklistItemId || undefined,
         nom: req.body.nom || file.originalname,
@@ -53,7 +52,7 @@ export const documentsController = {
   // GET /api/documents/:id/download
   async download(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const doc = await documentsService.findById(req.params.id);
+      const doc = await documentsService.findById(req.params.id as string);
       const filePath = path.resolve(doc.filePath);
 
       if (!fs.existsSync(filePath)) {
@@ -72,7 +71,7 @@ export const documentsController = {
   // GET /api/documents/:id
   async findById(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const doc = await documentsService.findById(req.params.id);
+      const doc = await documentsService.findById(req.params.id as string);
       res.json({ success: true, document: doc });
     } catch (error) {
       next(error);
@@ -83,7 +82,7 @@ export const documentsController = {
   async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const doc = await documentsService.update(
-        req.params.id,
+        req.params.id as string,
         req.body,
         req.user!.userId
       );
@@ -96,7 +95,7 @@ export const documentsController = {
   // DELETE /api/documents/:id
   async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await documentsService.delete(req.params.id, req.user!.userId);
+      await documentsService.delete(req.params.id as string, req.user!.userId);
       res.json({ success: true, message: "تم حذف المستند بنجاح" });
     } catch (error) {
       next(error);
@@ -128,7 +127,7 @@ export const documentsController = {
   // PUT /api/document-types/:id
   async updateType(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const type = await documentsService.updateType(req.params.id, req.body);
+      const type = await documentsService.updateType(req.params.id as string, req.body);
       res.json({ success: true, type });
     } catch (error) {
       next(error);
@@ -138,7 +137,7 @@ export const documentsController = {
   // DELETE /api/document-types/:id
   async deleteType(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await documentsService.deleteType(req.params.id);
+      await documentsService.deleteType(req.params.id as string);
       res.json({ success: true, message: "تم حذف النوع بنجاح" });
     } catch (error) {
       next(error);

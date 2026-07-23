@@ -28,7 +28,7 @@ export const casesController = {
   // GET /api/cases/:id
   async findById(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const cas = await casesService.findById(req.params.id);
+      const cas = await casesService.findById(req.params.id as string);
       res.json({ success: true, case: cas });
     } catch (error) {
       next(error);
@@ -52,7 +52,7 @@ export const casesController = {
   async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const cas = await casesService.update(
-        req.params.id,
+        req.params.id as string,
         req.body,
         req.user!.userId
       );
@@ -65,7 +65,7 @@ export const casesController = {
   // DELETE /api/cases/:id
   async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await casesService.delete(req.params.id, req.user!.userId);
+      await casesService.delete(req.params.id as string, req.user!.userId);
       res.json({ success: true, message: "تم حذف الملف بنجاح" });
     } catch (error) {
       next(error);
@@ -76,10 +76,10 @@ export const casesController = {
   async toggleChecklist(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const result = await casesService.toggleChecklistItem(
-        req.params.itemId,
+        req.params.itemId as string,
         req.body.coche,
         req.user!.userId,
-        req.params.id
+        req.params.id as string
       );
       res.json({ success: true, ...result });
     } catch (error) {
@@ -90,7 +90,7 @@ export const casesController = {
   // GET /api/cases/:id/pdf
   async exportPDF(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const data = await casesService.getExportData(req.params.id);
+      const data = await casesService.getExportData(req.params.id as string);
       const pdfBuffer = await generateCasePDF(data);
 
       res.setHeader("Content-Type", "application/pdf");

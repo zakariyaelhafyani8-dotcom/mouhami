@@ -21,7 +21,7 @@ export const notificationsController = {
   // PUT /api/notifications/:id/read
   async markAsRead(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      await notificationRepository.markAsRead(req.params.id);
+      await notificationRepository.markAsRead(req.params.id as string);
       res.json({ success: true, message: "تمت قراءة الإشعار" });
     } catch (error) {
       next(error);

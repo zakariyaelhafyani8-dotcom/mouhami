@@ -24,7 +24,7 @@ export const hearingsController = {
   // GET /api/cases/:casId/hearings
   async findByCaseId(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const hearings = await hearingRepository.findByCaseId(req.params.casId);
+      const hearings = await hearingRepository.findByCaseId(req.params.casId as string);
       res.json({ success: true, hearings });
     } catch (error) {
       next(error);
@@ -35,7 +35,7 @@ export const hearingsController = {
   async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const hearing = await hearingRepository.create({
-        casId: req.params.casId,
+        casId: req.params.casId as string,
         date: new Date(req.body.date),
         heure: req.body.heure || undefined,
         type: req.body.type || undefined,
@@ -51,7 +51,7 @@ export const hearingsController = {
         entity: "hearing",
         entityId: hearing.id,
         description: `إضافة جلسة : ${new Date(hearing.date).toLocaleDateString("fr-FR")}`,
-        casId: req.params.casId,
+        casId: req.params.casId as string,
       });
 
       res.status(201).json({ success: true, hearing });
@@ -63,7 +63,7 @@ export const hearingsController = {
   // PUT /api/hearings/:id
   async update(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const hearing = await hearingRepository.update(req.params.id, req.body);
+      const hearing = await hearingRepository.update(req.params.id as string, req.body);
 
       await activityRepository.create({
         userId: req.user!.userId,
@@ -83,18 +83,18 @@ export const hearingsController = {
   // DELETE /api/hearings/:id
   async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const hearing = await hearingRepository.findById(req.params.id);
+      const hearing = await hearingRepository.findById(req.params.id as string);
       if (!hearing) {
         return res.status(404).json({ success: false, message: "الجلسة غير موجودة" });
       }
 
-      await hearingRepository.delete(req.params.id);
+      await hearingRepository.delete(req.params.id as string);
 
       await activityRepository.create({
         userId: req.user!.userId,
         action: "suppression",
         entity: "hearing",
-        entityId: req.params.id,
+        entityId: req.params.id as string,
         description: `حذف جلسة`,
         casId: hearing.casId,
       });
