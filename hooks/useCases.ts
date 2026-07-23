@@ -116,16 +116,10 @@ export function useCases() {
   );
 
   const exportPDF = useCallback(async (caseId: string) => {
-    const token = localStorage.getItem("accessToken");
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"}/cases/${caseId}/pdf`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await fetch(`/api/cases/${caseId}/pdf`, {
+        credentials: "same-origin",
+      });
 
       if (!res.ok) throw new Error("PDF generation failed");
 

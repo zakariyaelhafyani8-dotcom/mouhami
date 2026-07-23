@@ -1,6 +1,3 @@
-// Utilitaires d'authentification côté client
-// Gère le stockage des tokens et les vérifications de rôle
-
 export interface AuthUser {
   id: string;
   email: string;
@@ -9,38 +6,48 @@ export interface AuthUser {
   role: "admin" | "client";
 }
 
-// Vérifie si l'utilisateur est connecté
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : null;
+}
+
+function setCookie(name: string, value: string, maxAge: number): void {
+  if (typeof document === "undefined") return;
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; SameSite=Lax`;
+}
+
+function deleteCookie(name: string): void {
+  if (typeof document === "undefined") return;
+  document.cookie = `${name}=; path=/; max-age=0`;
+}
+
 export function isAuthenticated(): boolean {
-  if (typeof window === "undefined") return false;
-  return !!localStorage.getItem("accessToken");
+  return !!getCookie("user");
 }
 
-// Récupère l'utilisateur stocké
 export function getStoredUser(): AuthUser | null {
-  if (typeof window === "undefined") return null;
-  const user = localStorage.getItem("user");
-  return user ? JSON.parse(user) : null;
+  const raw = getCookie("user");
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    return null;
+  }
 }
 
-// Stocke l'utilisateur
 export function setStoredUser(user: AuthUser): void {
-  localStorage.setItem("user", JSON.stringify(user));
+  setCookie("user", JSON.stringify(user), 7 * 24 * 60 * 60);
 }
 
-// Stocke les tokens après connexion
-export function setAuthTokens(accessToken: string, refreshToken: string): void {
-  localStorage.setItem("accessToken", accessToken);
-  localStorage.setItem("refreshToken", refreshToken);
+export function setAuthTokens(_accessToken: string, _refreshToken: string): void {
+  // Tokens are set as httpOnly cookies by the server.
 }
 
-// Déconnexion
 export function clearAuth(): void {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
-  localStorage.removeItem("user");
+  deleteCookie("user");
 }
 
-// Vérifie si l'utilisateur a le rôle admin
 export function isAdmin(): boolean {
   const user = getStoredUser();
   return user?.role === "admin";

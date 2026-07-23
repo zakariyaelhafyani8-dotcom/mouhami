@@ -87,7 +87,7 @@ export default function DocumentsPage() {
                     <td className="px-4 py-3 text-sm text-secondary-400">{formatDateShort(doc.uploadedAt)}</td>
                     <td className="px-4 py-3 text-sm">
                       <a
-                        href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"}/documents/${doc.id}/download`}
+                        href={`/api/documents/${doc.id}/download`}
                         className="text-primary-500 hover:text-primary-600"
                       >
                         تحميل

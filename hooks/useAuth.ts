@@ -33,7 +33,7 @@ export function useAuth() {
         user: AuthUser;
         accessToken: string;
         refreshToken: string;
-      }>("/auth/login", { email, password });
+      }>("/auth/login", { email, password }, { requireAuth: false });
 
       if (result.success && result.data) {
         setAuthTokens(result.data.accessToken, result.data.refreshToken);
@@ -66,7 +66,7 @@ export function useAuth() {
         user: AuthUser;
         accessToken: string;
         refreshToken: string;
-      }>("/auth/register", data);
+      }>("/auth/register", data, { requireAuth: false });
 
       if (result.success && result.data) {
         setAuthTokens(result.data.accessToken, result.data.refreshToken);
@@ -82,7 +82,7 @@ export function useAuth() {
   );
 
   const logout = useCallback(async () => {
-    await apiService.post("/auth/logout", {});
+    await apiService.post("/auth/logout", {}, { requireAuth: false });
     clearAuth();
     setUser(null);
     router.push("/login");

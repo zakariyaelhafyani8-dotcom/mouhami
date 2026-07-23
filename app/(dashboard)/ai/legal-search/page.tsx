@@ -40,13 +40,12 @@ export default function LegalSearchPage() {
     abortRef.current = controller;
 
     try {
-      const token = localStorage.getItem("accessToken");
       const res = await fetch(`${API_BASE}/ai/legal-search`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
+        credentials: "same-origin",
         body: JSON.stringify({ question: question.trim() }),
         signal: controller.signal,
       });

@@ -12,9 +12,27 @@ export interface AuthUser {
 export function getAuthUser(request: NextRequest): AuthUser | null {
   try {
     const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
-    const token = authHeader.split(" ")[1];
-    return verifyAccessToken(token);
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      return verifyAccessToken(token);
+    }
+
+    const userId = request.headers.get("x-user-id");
+    const email = request.headers.get("x-user-email");
+    const role = request.headers.get("x-user-role");
+    const nom = request.headers.get("x-user-nom");
+    const prenom = request.headers.get("x-user-prenom");
+
+    if (userId && email && role && nom && prenom) {
+      return { userId, email, role, nom: decodeURIComponent(nom), prenom: decodeURIComponent(prenom) };
+    }
+
+    const accessToken = request.cookies.get("accessToken")?.value;
+    if (accessToken) {
+      return verifyAccessToken(accessToken);
+    }
+
+    return null;
   } catch {
     return null;
   }

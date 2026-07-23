@@ -122,7 +122,7 @@ export default function ClientCaseDetailPage() {
                     <p className="text-xs text-secondary-400">{doc.fileName}</p>
                   </div>
                   <a
-                    href={`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"}/documents/${doc.id}/download`}
+                    href={`/api/documents/${doc.id}/download`}
                     className="text-primary-500 hover:text-primary-600 text-sm"
                   >
                     تحميل

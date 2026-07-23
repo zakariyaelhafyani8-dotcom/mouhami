@@ -41,16 +41,12 @@ export default function CaseDetailPage() {
     }
     setUploading(true);
 
-    const token = localStorage.getItem("accessToken");
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api"}/cases/${id}/documents`,
-        {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        }
-      );
+      const res = await fetch(`/api/cases/${id}/documents`, {
+        method: "POST",
+        credentials: "same-origin",
+        body: formData,
+      });
       const data = await res.json();
       if (data.success) {
         setShowDocModal(false);
@@ -94,7 +90,7 @@ export default function CaseDetailPage() {
     );
   }
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api";
+  const apiBase = "/api";
 
   return (
     <div>
