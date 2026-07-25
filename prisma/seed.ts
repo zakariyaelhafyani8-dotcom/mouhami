@@ -87,7 +87,7 @@ const juges = [
 const CLIENT_COUNT = 45;
 let caseCounter = 0;
 
-function pick<T>(arr: T[]): T {
+function pick<T>(arr: readonly T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
