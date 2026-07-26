@@ -617,9 +617,9 @@ async function main() {
 
     for (const offset of offsets) {
       const remindAt = new Date(date);
-      if ("days" in offset) remindAt.setDate(remindAt.getDate() + offset.days);
-      if ("hours" in offset) remindAt.setHours(remindAt.getHours() + offset.hours);
-      if ("minutes" in offset) remindAt.setMinutes(remindAt.getMinutes() + offset.minutes);
+      if ("days" in offset) remindAt.setDate(remindAt.getDate() + (offset as { days: number }).days);
+      if ("hours" in offset) remindAt.setHours(remindAt.getHours() + (offset as { hours: number }).hours);
+      if ("minutes" in offset) remindAt.setMinutes(remindAt.getMinutes() + (offset as { minutes: number }).minutes);
 
       await prisma.reminder.create({
         data: {
