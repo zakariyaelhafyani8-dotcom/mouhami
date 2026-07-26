@@ -158,7 +158,36 @@ const paymentModes = ["especes", "cheques", "virement"] as const;
 const caseStatuses = ["en_cours", "cloture", "suspendu"] as const;
 const docStatuses = ["en_attente", "valide", "rejete"] as const;
 
+async function connectWithRetry(maxRetries = 10, delayMs = 3000): Promise<void> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await prisma.$connect();
+      await prisma.$executeRawUnsafe(`SELECT 1`);
+      console.log("Connected to database");
+      return;
+    } catch (e: any) {
+      console.log(`Connection attempt ${i + 1}/${maxRetries} failed: ${e.message?.slice(0, 80)}`);
+      if (i < maxRetries - 1) {
+        console.log(`Retrying in ${delayMs / 1000}s...`);
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+  }
+  throw new Error("Failed to connect after maximum retries");
+}
+
+async function ensureConnection(): Promise<void> {
+  try {
+    await prisma.$executeRawUnsafe(`SELECT 1`);
+  } catch {
+    console.log("  Connection lost, reconnecting...");
+    await prisma.$disconnect();
+    await connectWithRetry(5, 3000);
+  }
+}
+
 async function main() {
+  await connectWithRetry();
   console.log("Resetting database...");
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
@@ -402,6 +431,7 @@ async function main() {
   let checklistCount = 0;
   for (const c of allCases) {
     if (!c.templateId) continue;
+    await ensureConnection();
     const tmplDocs = await prisma.caseTemplateDocument.findMany({
       where: { templateId: c.templateId },
       orderBy: { ordre: "asc" },
@@ -436,6 +466,7 @@ async function main() {
   ];
 
   for (const c of allCases) {
+    await ensureConnection();
     const docCountForCase = Math.floor(Math.random() * 8) + 1;
     const checklistItems = await prisma.caseChecklistItem.findMany({ where: { casId: c.id } });
 
@@ -473,6 +504,7 @@ async function main() {
   console.log("Creating hearings...");
   let hearingCount = 0;
   for (const c of allCases) {
+    await ensureConnection();
     const hearingCountForCase = Math.floor(Math.random() * 6);
 
     for (let h = 0; h < hearingCountForCase; h++) {
@@ -505,6 +537,7 @@ async function main() {
   console.log("Creating payments...");
   let paymentCount = 0;
   for (const c of allCases) {
+    await ensureConnection();
     const paymentCountForCase = Math.floor(Math.random() * 5);
 
     for (let p = 0; p < paymentCountForCase; p++) {
@@ -531,6 +564,7 @@ async function main() {
   const allUsers = await prisma.user.findMany({ select: { id: true, role: true } });
 
   for (const user of allUsers) {
+    await ensureConnection();
     for (let n = 0; n < 8; n++) {
       const type = pick(["audience", "document", "dossier", "paiement"]);
       const lu = Math.random() > 0.4;
@@ -556,6 +590,7 @@ async function main() {
   let activityCount = 0;
 
   for (const user of allUsers) {
+    await ensureConnection();
     for (let a = 0; a < 15; a++) {
       const action = pick(["creation", "modification", "upload", "download", "export", "login"]);
       const entity = pick(["client", "case", "document", "hearing", "payment"]);
