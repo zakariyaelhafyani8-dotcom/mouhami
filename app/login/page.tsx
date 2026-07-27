@@ -293,20 +293,18 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-black">
-      {/* Image de fond — 100% naturelle, aucun filtre */}
-      <div
-        className="absolute inset-0 bg-center bg-no-repeat"
-        style={{
-          backgroundImage: "url('/images/background.jpg')",
-          backgroundAttachment: "fixed",
-          width: "100%",
-          height: "100vh",
-          backgroundSize: "100% auto",
-        }}
+      {/* Image de fond */}
+      <img
+        src="/images/background.jpg"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover"
       />
 
-      {/* Contenu centré — décalé vers le bas */}
+      {/* Contenu centré */}
       <div className="relative z-10 w-full min-h-screen flex flex-col items-center gap-6 px-4 pt-[55vh]">
+        {/* Logo */}
+        
+
         {/* Grands boutons */}
         <button
           onClick={() => { setShowLogin(true); setShowRegister(false); }}
